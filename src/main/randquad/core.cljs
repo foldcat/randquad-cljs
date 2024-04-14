@@ -104,7 +104,6 @@
 
 (defn input-box
   [value]
-  (log/info "input box rendered")
   [:input
    {:type "text"
     :value @value
@@ -160,7 +159,6 @@
   "regenerate quad equation"
   [msg visibility]
   (log/info "regenerating")
-  (js/alert "regen")
   (reset! quad (genquad))
   (reset! msg "")
   (reset! visibility "hidden")
