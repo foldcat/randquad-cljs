@@ -8,6 +8,9 @@
 
 
 (defonce quad (r/atom nil))
+(defonce msg (r/atom ""))
+(defonce visibility (r/atom "hidden"))
+(defonce input (r/atom ""))
 
 
 (def style
@@ -31,21 +34,30 @@
 (defn hide-one
   "if n = 1 returns empty string, 
   otherwise return n as string"
-  [n]
-  (if (= n 1)
-    ""
-    (str n)))
+  [first? last? n]
+  (if (= (abs n) 1)
+    (if (= n 1)
+      (cond
+        first? ""
+        last? "+1"
+        :else "+")
+      (if last?
+        "-1"
+        "-"))
+    n))
 
 
 (defn format-ve
-  "if n is negetive format n into string, 
-  if n is possitive format n into string and add + sign"
+  "if n is negative format n into string, 
+  if n is positive format n into string and add + sign"
   [first? n]
-  (if (pos? n)
-    (if first?
-      (str n)
-      (str "+ " n))
-    (str "- " (abs n))))
+  (if (string? n)
+    n
+    (if (pos? n)
+      (if first?
+        (str n)
+        (str "+ " n))
+      (str "- " (abs n)))))
 
 
 (defn neg
@@ -56,12 +68,16 @@
 
 (def fmt-first
   (comp (partial format-ve true)
-        hide-one))
+        (partial hide-one true false)))
 
 
 (def fmt
   (comp (partial format-ve false)
-        hide-one))
+        (partial hide-one false false)))
+
+(def fmt-last
+  (comp (partial format-ve false)
+        (partial hide-one false true)))
 
 
 (defn genquad
@@ -74,11 +90,12 @@
         a -c
         b (* -c (+ -a -b))
         c (* -a -b -c)]
+
     [(gstring/format
-       "%sx^2  %sx  %s"
+       "$%sx^2  %sx  %s$"
        (fmt-first a)
        (fmt b)
-       (fmt c))
+       (fmt-last c))
      {:a (neg -a)
       :b (neg -b)}]))
 
@@ -102,7 +119,7 @@
         matches (map #(js/parseInt %)
                      (re-seq #"-?\d+" processed))
         flipped (map neg matches)
-        ans @root
+        ans root
         a (first flipped)
         b (second flipped)]
     (or (and (= (:a ans) a) (= (:b ans) b))
@@ -114,8 +131,8 @@
   [input root msg visibility]
   (if (validate-input @input root)
     (do (reset! msg "correct answer")
-        (reset! visibility "block"))
-    (let [ans @root
+        (reset! visibility "visible"))
+    (let [ans root
           a (:a ans)
           b (:b ans)]
       (println a b)
@@ -131,8 +148,8 @@
   (js/alert "regen")
   (reset! quad (genquad))
   (reset! msg "")
-  (reset! visibility "hidden"))
-
+  (reset! visibility "hidden")
+  (reset! input ""))
 
 (defn indicator
   [text]
@@ -141,11 +158,8 @@
 
 (defn main-component
   []
-  (let [root (second quad)
-        quad-mut (first quad)
-        input (r/atom "")
-        msg (r/atom "")
-        visibility (r/atom "none")]
+  (let [root (second @quad)
+        quad-mut (first @quad)]
     [:div style
      [:div
       [:p
@@ -156,7 +170,7 @@
        [:button {:on-click #(submit input root msg visibility)}
         "submit"]
        [indicator msg]]
-      [:div {:style {:display @visibility}}
+      [:div {:style {:visibility @visibility}}
        [:button {:on-click #(regen msg visibility)}
         "next"]]]]))
 
