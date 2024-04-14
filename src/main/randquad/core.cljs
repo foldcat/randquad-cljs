@@ -23,6 +23,12 @@
     :transform "translate(-50%, -50%)"}})
 
 
+(defn rerender-latex
+  []
+  (log/info "attempting to rerender latex")
+  ((.-typeset js/MathJax)))
+
+
 (defn randnum
   [n adjust]
   (let [random-number (rand-int n)
@@ -141,13 +147,13 @@
   (reset! visibility "visible")
   (if (validate-input @input root)
     (do
-      (log/info "user answer incorrect")
+      (log/info "user answer correct")
       (reset! msg "correct answer"))
 
     (let [ans root
           a (:a ans)
           b (:b ans)]
-      (log/info "user answer correct, answer" a b)
+      (log/info "user answer incorrect")
       (reset!
         msg
         (gstring/format
@@ -179,16 +185,24 @@
     "next"]])
 
 
+(defn question-display
+  []
+  (r/create-class
+    {:component-did-update
+     (fn [] (rerender-latex))
+     :reagent-render
+     (fn []
+       [:p {:style {:font-size "200%"}}
+        (first @quad)])}))
+
+
 (defn main-component
   []
-  (log/info "main component rendered")
-  (let [root (second @quad)
-        quad-mut (first @quad)]
+  (log/info "main component rendering")
+  (let [root (second @quad)]
     [:div style
      [:div
-      [:p
-       {:style {:font-size "200%"}}
-       quad-mut]
+      [question-display]
       [:div
        [input-box input]
        [:button {:on-click #(submit root)}
