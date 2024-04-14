@@ -177,9 +177,6 @@
         "next"]]]]))
 
 
-;; TODO move genquad away from main-component 
-;; and place it in toplevel
-
 (defn ^:export run
   []
   (reset! quad (genquad))
