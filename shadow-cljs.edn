@@ -7,12 +7,13 @@
  :dependencies
  [[reagent "1.2.0"]
   [cljsjs/react "17.0.2-0"]
-  [cljsjs/react-dom "17.0.2-0"]]
+  [cljsjs/react-dom "17.0.2-0"]
+  [com.taoensso/timbre "6.5.0"]]
 
  :dev-http {8080 "public"}
 
  :builds
- {:app {:target :browser 
+ {:app {:target :browser
         :output-dir "public/scripts/"
         :asset-path "/scripts/"
         :modules {:core {:init-fn randquad.core/run}}}}}

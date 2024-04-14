@@ -4,7 +4,8 @@
     [goog.string :as gstring]
     [goog.string.format]
     [reagent.core :as r]
-    [reagent.dom :as rdom]))
+    [reagent.dom :as rdom]
+    [taoensso.timbre :as log]))
 
 
 (defonce quad (r/atom nil))
@@ -84,7 +85,7 @@
 (defn genquad
   "generates random quad equation"
   []
-  (js/alert "genquad ran")
+  (log/info "genquad ran")
   (let [-a (randnum 19 9)
         -b (randnum 19 9)
         -c (randnum 11 5)
@@ -103,6 +104,7 @@
 
 (defn input-box
   [value]
+  (log/info "input box rendered")
   [:input
    {:type "text"
     :value @value
@@ -123,29 +125,41 @@
         ans root
         a (first flipped)
         b (second flipped)]
+    (log/info "input validation")
+    (log/info "processed:" processed)
+    (log/info "matches:" matches)
+    (log/info "flipped:" flipped)
+    (log/info "ans:" ans)
+    (log/info "a, b:" a b)
     (or (and (= (:a ans) a) (= (:b ans) b))
         (and (= (:b ans) a) (= (:a ans) b)))))
 
 
 (defn submit
   "submit and validate input, rerender"
-  [input root msg visibility]
+  [root]
+  (log/info "submitted")
+  (reset! visibility "visible")
   (if (validate-input @input root)
-    (do (reset! msg "correct answer")
-        (reset! visibility "visible"))
+    (do
+      (log/info "user answer incorrect")
+      (reset! msg "correct answer"))
+
     (let [ans root
           a (:a ans)
           b (:b ans)]
-      (println a b)
+      (log/info "user answer correct, answer" a b)
       (reset!
         msg
-        (gstring/format "incorrect answer, roots are (%s, %s)"
-                        a b)))))
+        (gstring/format
+          "incorrect answer, roots are (%s, %s)"
+          a b)))))
 
 
 (defn regen
   "regenerate quad equation"
   [msg visibility]
+  (log/info "regenerating")
   (js/alert "regen")
   (reset! quad (genquad))
   (reset! msg "")
@@ -155,11 +169,21 @@
 
 (defn indicator
   [text]
+  (log/info "indicator rendered")
   [:p @text])
+
+
+(defn next-button
+  []
+  (log/info "next button rendered")
+  [:div {:style {:visibility @visibility}}
+   [:button {:on-click #(regen msg visibility)}
+    "next"]])
 
 
 (defn main-component
   []
+  (log/info "main component rendered")
   (let [root (second @quad)
         quad-mut (first @quad)]
     [:div style
@@ -169,16 +193,15 @@
        quad-mut]
       [:div
        [input-box input]
-       [:button {:on-click #(submit input root msg visibility)}
+       [:button {:on-click #(submit root)}
         "submit"]
        [indicator msg]]
-      [:div {:style {:visibility @visibility}}
-       [:button {:on-click #(regen msg visibility)}
-        "next"]]]]))
+      [next-button]]]))
 
 
 (defn ^:export run
   []
+  (log/info "started")
   (reset! quad (genquad))
   (rdom/render
     [#'main-component]
