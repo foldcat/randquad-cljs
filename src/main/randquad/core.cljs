@@ -75,6 +75,7 @@
   (comp (partial format-ve false)
         (partial hide-one false false)))
 
+
 (def fmt-last
   (comp (partial format-ve false)
         (partial hide-one false true)))
@@ -150,6 +151,7 @@
   (reset! msg "")
   (reset! visibility "hidden")
   (reset! input ""))
+
 
 (defn indicator
   [text]
